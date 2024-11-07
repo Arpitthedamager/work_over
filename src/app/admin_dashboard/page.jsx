@@ -6,6 +6,7 @@ import UserList from "../components/userlist/UserList";
 import AddCustomer from "../components/addcostumer/AddCustomer";
 import AddBulkCustomers from "../components/addbulkcostumer/AddBulkcustomer";
 import CustomerTable from "../components/customertable/CustomerTable";
+import EditCustomer from "../components/editcustomer/EditCustomer";
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -79,6 +80,7 @@ export default function AdminDashboard() {
         </button>
         {showCustomerTable && <CustomerTable />} {/* Only show the table when toggled */}
       </div>
+      <EditCustomer/>
     </div>
   );
 }
