@@ -1,7 +1,8 @@
 "use client";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation'; // Use next/navigation instead of next/router
 import bcrypt from 'bcryptjs';
+import { useSession } from 'next-auth/react';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,24 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const router = useRouter(); // Using router from next/navigation
+
+  const { data: session, status } = useSession();
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (status === "loading") {
+      return;
+    }
+
+    if (!session || session.user.role !== "admin") {
+      router.push("/"); // Redirect to home if not an admin
+    }
+  }, [status, session, router]);
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
 
   // Handle form submission
   const handleSubmit = async (e) => {
