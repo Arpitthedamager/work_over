@@ -1,76 +1,27 @@
-"use client";
-import { useState } from "react";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
-export default function Admin() {
-  const [clientData, setClientData] = useState({
-    name: "",
-    number: "",
-    area: "",
-    category: "",
-    instagram: "",
-  });
+export default function AdminDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  const handleChange = (e) => {
-    setClientData({ ...clientData, [e.target.name]: e.target.value });
-  };
+  // Redirect if not admin
+  if (status === 'loading') {
+    return <p>Loading...</p>;
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const res = await fetch("/api/clients", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(clientData),
-    });
-    if (res.ok) {
-      alert("Client data uploaded!");
-      setClientData({ name: "", number: "", area: "", category: "", instagram: "" });
-    }
-  };
+  if (!session || session.user.role !== 'admin') {
+    router.push('/'); // Redirect to home if the user is not an admin
+    return null;
+  }
 
   return (
-    <div className="p-6 max-w-md mx-auto">
-      <form onSubmit={handleSubmit}>
-        <input
-          name="name"
-          value={clientData.name}
-          onChange={handleChange}
-          placeholder="Client Name"
-          className="w-full border p-2 mb-4"
-        />
-        <input
-          name="number"
-          value={clientData.number}
-          onChange={handleChange}
-          placeholder="Phone Number"
-          className="w-full border p-2 mb-4"
-        />
-        <input
-          name="area"
-          value={clientData.area}
-          onChange={handleChange}
-          placeholder="Area"
-          className="w-full border p-2 mb-4"
-        />
-        <input
-          name="category"
-          value={clientData.category}
-          onChange={handleChange}
-          placeholder="Category"
-          className="w-full border p-2 mb-4"
-        />
-        <input
-          name="instagram"
-          value={clientData.instagram}
-          onChange={handleChange}
-          placeholder="Instagram ID"
-          className="w-full border p-2 mb-4"
-        />
-        <button type="submit" className="bg-blue-500 text-white py-2 px-4 rounded">
-          Upload
-        </button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <h2 className="text-4xl font-extrabold mb-6 text-center text-gray-800">Admin Dashboard</h2>
+        <p>Welcome, Admin! You can now manage your clients.</p>
+        {/* Admin content goes here */}
+      </div>
     </div>
   );
 }

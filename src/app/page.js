@@ -1,20 +1,12 @@
-import Image from "next/image";
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <>
-    <div>
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold">Welcome to Our Website</h1>
-      <div className="mt-4">
-        
-          <a className="bg-blue-500 text-white p-2 mr-4">Login</a>
-        
-          <a className="bg-green-500 text-white p-2">Client Area</a>
-      </div>
+    <div className="flex items-center justify-center min-h-screen">
+     
+      <Link href="/signin" className="bg-blue-500 text-white py-3 px-6 rounded-lg text-xl hover:bg-blue-600 transition duration-200">
+          Go to Login
+      </Link>
     </div>
-    </div>
-    </>
   );
 }
