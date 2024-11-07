@@ -3,7 +3,8 @@
 import { signOut, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import UserList from "../components/userlist/Userlist";
+import UserList from "../components/userlist/UserList";
+
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
@@ -39,7 +40,7 @@ export default function AdminDashboard() {
       >
         sign out
       </button>
-      <UserList /> {/* Use the UserList component here */}
+      <UserList/>
     </div>
   );
 }
