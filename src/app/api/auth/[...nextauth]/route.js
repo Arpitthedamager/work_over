@@ -54,7 +54,8 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: '/auth/signin', // Custom sign-in page
+    signIn: '/auth/signin',// Custom sign-in page
+    signOut: '/', // Example, use your desired route
   },
 };
 
