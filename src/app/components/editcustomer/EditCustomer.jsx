@@ -78,8 +78,6 @@ export default function EditCustomers() {
 
   return (
     <div className="p-6 shadow-lg rounded-xl w-full relative">
-      <h2 className="text-3xl font-semibold mb-6 text-gray-300">Edit Customers</h2>
-
       {/* Sliding notification */}
       <div
         className={`fixed top-4 left-0 transform ${
