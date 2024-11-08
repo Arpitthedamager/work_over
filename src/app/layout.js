@@ -25,6 +25,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <div className="fixed inset-0 pointer-events-none flex justify-center items-center opacity-10 z-0">
+          <h1 className="text-8xl font-bold text-gray-500 select-none">
+            Mr.Damager
+          </h1>
+        </div>
       </body>
     </html>
   );
