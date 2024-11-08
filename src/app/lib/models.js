@@ -9,7 +9,6 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
-// New Customer schema, using email instead of adminId
 const customerSchema = new mongoose.Schema({
   email: { type: String, required: true }, // Email of the admin who adds customers
   customers: [
@@ -18,7 +17,11 @@ const customerSchema = new mongoose.Schema({
       phoneNumber: { type: String, required: true },
       instagramId: { type: String, required: false },
       attended: { type: Boolean, default: false },
+      attendedUpdatedBy: { type: String, default: null }, // Empty by default
+      attendedUpdatedAt: { type: Date, default: null },   // Empty by default
       orderConfirmed: { type: Boolean, default: false },
+      orderConfirmedUpdatedBy: { type: String, default: null }, // Empty by default
+      orderConfirmedUpdatedAt: { type: Date, default: null },   // Empty by default
     }
   ]
 }, { timestamps: true });

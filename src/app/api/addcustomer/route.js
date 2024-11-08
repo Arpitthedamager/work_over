@@ -1,5 +1,5 @@
-import { CustomerList } from '@/app/lib/models';
-import { connectToDatabase } from '@/app/lib/util';
+import { CustomerList } from "@/app/lib/models";
+import { connectToDatabase } from "@/app/lib/util";
 
 export async function POST(req) {
   await connectToDatabase();
@@ -10,7 +10,10 @@ export async function POST(req) {
 
     // Validate required fields
     if (!email || !name || !phoneNumber || !instagramId) {
-      return new Response(JSON.stringify({ error: 'All fields are required' }), { status: 400 });
+      return new Response(
+        JSON.stringify({ error: "All fields are required" }),
+        { status: 400 }
+      );
     }
 
     // Check if a customer list exists for the admin's email
@@ -20,7 +23,19 @@ export async function POST(req) {
       // If no list exists, create a new one with the first customer
       customerList = await CustomerList.create({
         email,
-        customers: [{ name, phoneNumber, instagramId }],
+        customers: [
+          {
+            name,
+            phoneNumber,
+            instagramId,
+            attended: false,  // Default value
+            attendedUpdatedBy: null, // Empty initially
+            attendedUpdatedAt: null, // Empty initially
+            orderConfirmed: false,  // Default value
+            orderConfirmedUpdatedBy: null, // Empty initially
+            orderConfirmedUpdatedAt: null, // Empty initially
+          },
+        ],
       });
     } else {
       // Check if the customer with the same phone number already exists
@@ -30,18 +45,34 @@ export async function POST(req) {
 
       if (isDuplicate) {
         return new Response(
-          JSON.stringify({ error: 'Customer with this phone number already exists.' }),
+          JSON.stringify({ error: "Customer with this phone number already exists." }),
           { status: 409 } // Conflict status code
         );
       }
 
       // If not a duplicate, add the new customer to the array
-      customerList.customers.push({ name, phoneNumber, instagramId });
+      customerList.customers.push({
+        name,
+        phoneNumber,
+        instagramId,
+        attended: false,  // Default value
+        attendedUpdatedBy: null, // Empty initially
+        attendedUpdatedAt: null, // Empty initially
+        orderConfirmed: false,  // Default value
+        orderConfirmedUpdatedBy: null, // Empty initially
+        orderConfirmedUpdatedAt: null, // Empty initially
+      });
       await customerList.save();
     }
 
-    return new Response(JSON.stringify({ message: 'Customer added successfully!' }), { status: 201 });
+    return new Response(
+      JSON.stringify({ message: "Customer added successfully!" }),
+      { status: 201 }
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to add customer' }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Failed to add customer" }),
+      { status: 500 }
+    );
   }
 }
