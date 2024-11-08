@@ -1,3 +1,4 @@
+// /app/components/EditCustomers.js
 "use client";
 
 import { useEffect, useState } from "react";
@@ -36,7 +37,7 @@ export default function EditCustomers() {
   };
 
   // Handle saving the updated customer data to the backend
-  const handleSave = async (id, attended, orderConfirmed) => {
+  const handleSave = async (phoneNumber, attended, orderConfirmed) => {
     try {
       const res = await fetch('/api/editcustomerstatus', {
         method: 'PUT',
@@ -44,20 +45,20 @@ export default function EditCustomers() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id, // Use _id to identify the customer within the array
+          phoneNumber,  // Use phoneNumber instead of _id
           attended,
           orderConfirmed,
         }),
       });
 
       if (res.ok) {
-        setMessage(`Customer updated successfully`);
+        setMessage('Customer updated successfully');
       } else {
         const errorData = await res.json();
         setMessage(`Error: ${errorData.message}`);
       }
     } catch (error) {
-      setMessage(`Error: Unable to update customer`);
+      setMessage('Error: Unable to update customer');
     }
   };
 
@@ -66,12 +67,12 @@ export default function EditCustomers() {
   }
 
   return (
-    <div className="p-6 bg-white shadow-md rounded-md w-full max-w-3xl">
+    <div className="p-6  shadow-md rounded-md w-full max-w-3xl">
       <h2 className="text-2xl font-bold mb-4">Edit Customers</h2>
 
       <table className="min-w-full table-auto border">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-gray-400">
             <th className="px-4 py-2 border">#</th> {/* Column for serial number */}
             <th className="px-4 py-2 border">Name</th>
             <th className="px-4 py-2 border">Phone Number</th>
@@ -106,7 +107,7 @@ export default function EditCustomers() {
                 <button
                   onClick={() =>
                     handleSave(
-                      customer._id,
+                      customer.phoneNumber,  // Use phoneNumber instead of _id
                       customer.attended,
                       customer.orderConfirmed
                     )
