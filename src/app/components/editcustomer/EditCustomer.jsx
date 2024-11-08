@@ -248,7 +248,7 @@ export default function EditCustomers() {
               </button>
             )}
 
-            {/* Conditional rendering for update details */}
+            {/* Conditional rendering for update detail */}
             {expandedDetails[index] && (
               <>
                 {currentUser === customer.attendedUpdatedBy && (
