@@ -1,15 +1,13 @@
 "use client";
-import { signOut, useSession} from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // This works only in the 'app' directory
 import EditCustomers from "../components/editcustomer/EditCustomer";
 
-export default function user_dashboard() {
+export default function UserDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter(); // Using 'useRouter' from 'next/navigation'
 
-  
-  
   useEffect(() => {
     if (status === "loading") {
       return; // Wait until loading is finished
@@ -24,14 +22,14 @@ export default function user_dashboard() {
     return <p>Loading...</p>;
   }
 
-
   return (
     <div className="p-4">
       <div className="justify-between flex">
-      <h1 className="text-2xl font-bold mb-4">Customers List</h1>
-      <button onClick={signOut} className="p-2 bg-red-600 rounded-lg">sign Out</button>
-      </div>
-      <EditCustomers/>
+        <h1 className="text-2xl font-bold mb-4">Welcome to your dashboard,</h1>
+        <button onClick={signOut} className="p-2 bg-red-600 rounded-lg">Sign Out</button>
+      </div>      <h1 className="text-2xl">Customers List: {session.user.name}</h1>
+
+      <EditCustomers />
     </div>
   );
 }

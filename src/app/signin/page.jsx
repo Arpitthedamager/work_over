@@ -19,9 +19,9 @@ export default function SignIn() {
     if (session) {
       // Redirect based on user role
       if (session.user.role === "admin") {
-        router.push("/admin_dashboard");
+        router.push("/admindashboard");
       } else if (session.user.role === "user") {
-        router.push("/user_dashboard");
+        router.push("/userdashboard");
       }
     }
   }, [status, session, router]);
@@ -47,9 +47,9 @@ export default function SignIn() {
         console.log("Session data:", session); // Log the session data for debugging
 
         if (session.user.role === "admin") {
-          router.push("/admin_dashboard");
+          router.push("/admindashboard");
         } else if (session.user.role === "user") {
-          router.push("/user_dashboard");
+          router.push("/userdashboard");
         }
       } else {
         setError("Invalid username or password. Please try again.");

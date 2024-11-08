@@ -6,6 +6,7 @@ export default function EditCustomers() {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
+  const [showNotification, setShowNotification] = useState(false);
 
   // Fetch all customers when the component mounts
   useEffect(() => {
@@ -59,6 +60,12 @@ export default function EditCustomers() {
     } catch (error) {
       setMessage('Error: Unable to update customer');
     }
+
+    // Show notification and auto-hide after 3 seconds
+    setShowNotification(true);
+    setTimeout(() => {
+      setShowNotification(false);
+    }, 3000);
   };
 
   if (loading) {
@@ -70,15 +77,19 @@ export default function EditCustomers() {
   }
 
   return (
-    <div className="p-6 shadow-lg rounded-xl w-full">
-      <h2 className="text-3xl font-semibold mb-6 text-gray-800">Edit Customers</h2>
+    <div className="p-6 shadow-lg rounded-xl w-full relative">
+      <h2 className="text-3xl font-semibold mb-6 text-gray-300">Edit Customers</h2>
 
-      {/* Message section */}
-      {message && (
-        <p className={`mt-4 p-2 rounded-md text-white ${message.includes("Error") ? 'bg-red-500' : 'bg-green-500'}`}>
-          {message}
-        </p>
-      )}
+      {/* Sliding notification */}
+      <div
+        className={`fixed top-4 left-0 transform ${
+          showNotification ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-500 ease-in-out p-4 rounded-md text-white ${
+          message.includes("Error") ? 'bg-red-500' : 'bg-green-500'
+        }`}
+      >
+        {message}
+      </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full table-auto border-collapse  shadow-md rounded-md">
@@ -95,7 +106,7 @@ export default function EditCustomers() {
           </thead>
           <tbody>
             {customers.map((customer, index) => (
-              <tr key={customer._id} className="hover:bg-gray-100 transition-colors">
+              <tr key={customer._id} className="hover:bg-orange-700 transition-colors">
                 <td className="px-6 py-3 border">{index + 1}</td>
                 <td className="px-6 py-3 border">{customer.name}</td>
                 <td className="px-6 py-3 border">{customer.phoneNumber}</td>
