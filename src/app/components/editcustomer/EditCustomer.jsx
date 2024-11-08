@@ -1,4 +1,3 @@
-// /app/components/EditCustomers.js
 "use client";
 
 import { useEffect, useState } from "react";
@@ -63,66 +62,79 @@ export default function EditCustomers() {
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin w-10 h-10 border-4 border-t-4 border-blue-500 rounded-full"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="p-6  shadow-md rounded-md w-full max-w-3xl">
-      <h2 className="text-2xl font-bold mb-4">Edit Customers</h2>
+    <div className="p-6 shadow-lg rounded-xl w-full">
+      <h2 className="text-3xl font-semibold mb-6 text-gray-800">Edit Customers</h2>
 
-      <table className="min-w-full table-auto border">
-        <thead>
-          <tr className="bg-gray-400">
-            <th className="px-4 py-2 border">#</th> {/* Column for serial number */}
-            <th className="px-4 py-2 border">Name</th>
-            <th className="px-4 py-2 border">Phone Number</th>
-            <th className="px-4 py-2 border">Instagram ID</th>
-            <th className="px-4 py-2 border">Attended</th>
-            <th className="px-4 py-2 border">Order Confirmed</th>
-            <th className="px-4 py-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {customers.map((customer, index) => (
-            <tr key={customer._id}>
-              <td className="px-4 py-2 border">{index + 1}</td> {/* Serial number */}
-              <td className="px-4 py-2 border">{customer.name}</td>
-              <td className="px-4 py-2 border">{customer.phoneNumber}</td>
-              <td className="px-4 py-2 border">{customer.instagramId || 'N/A'}</td>
-              <td className="px-4 py-2 border">
-                <input
-                  type="checkbox"
-                  checked={customer.attended}
-                  onChange={() => handleCheckboxChange(index, 'attended')}
-                />
-              </td>
-              <td className="px-4 py-2 border">
-                <input
-                  type="checkbox"
-                  checked={customer.orderConfirmed}
-                  onChange={() => handleCheckboxChange(index, 'orderConfirmed')}
-                />
-              </td>
-              <td className="px-4 py-2 border">
-                <button
-                  onClick={() =>
-                    handleSave(
-                      customer.phoneNumber,  // Use phoneNumber instead of _id
-                      customer.attended,
-                      customer.orderConfirmed
-                    )
-                  }
-                  className="bg-blue-500 text-white px-4 py-1 rounded"
-                >
-                  Save
-                </button>
-              </td>
+      {/* Message section */}
+      {message && (
+        <p className={`mt-4 p-2 rounded-md text-white ${message.includes("Error") ? 'bg-red-500' : 'bg-green-500'}`}>
+          {message}
+        </p>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto border-collapse  shadow-md rounded-md">
+          <thead className="">
+            <tr>
+              <th className="px-6 py-3 border text-left text-gray-600">#</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Name</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Phone Number</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Instagram ID</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Attended</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Order Confirmed</th>
+              <th className="px-6 py-3 border text-left text-gray-600">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {message && <p className="mt-4 text-green-500">{message}</p>}
+          </thead>
+          <tbody>
+            {customers.map((customer, index) => (
+              <tr key={customer._id} className="hover:bg-gray-100 transition-colors">
+                <td className="px-6 py-3 border">{index + 1}</td>
+                <td className="px-6 py-3 border">{customer.name}</td>
+                <td className="px-6 py-3 border">{customer.phoneNumber}</td>
+                <td className="px-6 py-3 border">{customer.instagramId || 'N/A'}</td>
+                <td className="px-6 py-3 border text-center">
+                  <input
+                    type="checkbox"
+                    checked={customer.attended}
+                    onChange={() => handleCheckboxChange(index, 'attended')}
+                    className="w-5 h-5"
+                  />
+                </td>
+                <td className="px-6 py-3 border text-center">
+                  <input
+                    type="checkbox"
+                    checked={customer.orderConfirmed}
+                    onChange={() => handleCheckboxChange(index, 'orderConfirmed')}
+                    className="w-5 h-5"
+                  />
+                </td>
+                <td className="px-6 py-3 border text-center">
+                  <button
+                    onClick={() =>
+                      handleSave(
+                        customer.phoneNumber,  // Use phoneNumber instead of _id
+                        customer.attended,
+                        customer.orderConfirmed
+                      )
+                    }
+                    className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-all"
+                  >
+                    Save
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

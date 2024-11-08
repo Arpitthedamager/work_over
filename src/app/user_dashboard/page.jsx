@@ -2,6 +2,7 @@
 import { signOut, useSession} from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // This works only in the 'app' directory
+import EditCustomers from "../components/editcustomer/EditCustomer";
 
 export default function user_dashboard() {
   const { data: session, status } = useSession();
@@ -38,41 +39,11 @@ export default function user_dashboard() {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Customers List</h1><button onClick={signOut}>sign Out</button>
-      <table className="min-w-full bg-white">
-        <thead className="bg-gray-800 text-white">
-          <tr>
-            <th className="w-1/4 py-2">Name</th>
-            <th className="w-1/4 py-2">Phone Number</th>
-            <th className="w-1/4 py-2">Instagram ID</th>
-            <th className="w-1/4 py-2">Attended</th>
-            <th className="w-1/4 py-2">Order Confirmed</th>
-          </tr>
-        </thead>
-        <tbody>
-          {customers.map((customer) => (
-            <tr key={customer._id}>
-              <td className="border px-4 py-2">{customer.name}</td>
-              <td className="border px-4 py-2">{customer.phoneNumber}</td>
-              <td className="border px-4 py-2">{customer.instagramId}</td>
-              <td className="border px-4 py-2">
-                <input
-                  type="checkbox"
-                  checked={customer.attended}
-                  readOnly
-                />
-              </td>
-              <td className="border px-4 py-2">
-                <input
-                  type="checkbox"
-                  checked={customer.orderConfirmed}
-                  readOnly
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div className="justify-between flex">
+      <h1 className="text-2xl font-bold mb-4">Customers List</h1>
+      <button onClick={signOut} className="p-2 bg-red-600 rounded-lg">sign Out</button>
+      </div>
+      <EditCustomers/>
     </div>
   );
 }
