@@ -1,4 +1,3 @@
-// /app/api/editcustomerstatus/route.js
 import { connectToDatabase } from '@/app/lib/util';
 import { CustomerList } from '@/app/lib/models';
 
@@ -11,7 +10,10 @@ export async function PUT(req) {
     await connectToDatabase();
 
     // Get the request body
-    const { phoneNumber, attended, orderConfirmed } = await req.json();
+    const { phoneNumber, attended, orderConfirmed, updatedBy } = await req.json();
+
+    // Get the current date and time for updating the timestamp fields
+    const currentTime = new Date();
 
     // Update customer by phone number
     const updatedCustomer = await CustomerList.updateOne(
@@ -19,7 +21,11 @@ export async function PUT(req) {
       {
         $set: {
           "customers.$.attended": attended,
-          "customers.$.orderConfirmed": orderConfirmed
+          "customers.$.attendedUpdatedBy": updatedBy,
+          "customers.$.attendedUpdatedAt": currentTime,
+          "customers.$.orderConfirmed": orderConfirmed,
+          "customers.$.orderConfirmedUpdatedBy": updatedBy,
+          "customers.$.orderConfirmedUpdatedAt": currentTime,
         }
       }
     );
@@ -43,11 +49,4 @@ export async function PUT(req) {
       headers: { 'Content-Type': 'application/json' }
     });
   }
-}
-
-export async function GET() {
-  return new Response(JSON.stringify({ message: 'Method Not Allowed' }), {
-    status: 405,
-    headers: { 'Content-Type': 'application/json' }
-  });
 }

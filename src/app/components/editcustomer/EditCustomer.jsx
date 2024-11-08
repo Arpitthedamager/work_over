@@ -1,19 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 
 export default function EditCustomers() {
+  const { data: session } = useSession(); // Get session
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [showNotification, setShowNotification] = useState(false);
+  const [expandedDetails, setExpandedDetails] = useState({}); // Track expanded state for each customer
   const [filters, setFilters] = useState({
     name: "",
     phoneNumber: "",
     attended: false,
     orderConfirmed: false,
   });
+
+  const currentUser = session?.user?.name || "Unknown User"; // Use email instead of name for matching
 
   // Fetch customers when component mounts
   useEffect(() => {
@@ -40,6 +45,18 @@ export default function EditCustomers() {
   // Handle checkbox change
   const handleCheckboxChange = (index, field) => {
     const updatedCustomers = [...customers];
+
+    // Only allow the user to modify if they are the same user who last updated
+    if (
+      (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
+      (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser)
+    ) {
+      setMessage(`You can only modify the ${field} field if you were the last one to update it and ${currentUser} is working on .`);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+      return; // Prevent modification
+    }
+
     updatedCustomers[index][field] = !updatedCustomers[index][field];
     setCustomers(updatedCustomers);
   };
@@ -56,6 +73,7 @@ export default function EditCustomers() {
           phoneNumber,
           attended,
           orderConfirmed,
+          updatedBy: currentUser, // Use the session's email as the updatedBy value
         }),
       });
 
@@ -74,6 +92,14 @@ export default function EditCustomers() {
     setTimeout(() => {
       setShowNotification(false);
     }, 3000);
+  };
+
+  // Toggle expanded details for a specific customer
+  const toggleDetails = (index) => {
+    setExpandedDetails((prevState) => ({
+      ...prevState,
+      [index]: !prevState[index], // Toggle the specific customer details
+    }));
   };
 
   // Apply filters
@@ -136,9 +162,7 @@ export default function EditCustomers() {
             type="text"
             placeholder="Name"
             value={filters.name}
-            onChange={(e) =>
-              setFilters({ ...filters, name: e.target.value })
-            }
+            onChange={(e) => setFilters({ ...filters, name: e.target.value })}
             className="p-2 border rounded-md w-full"
           />
           <input
@@ -210,7 +234,61 @@ export default function EditCustomers() {
               </label>
             </div>
 
+            {/* Show Details button - visible only if currentUser is the one who updated */}
+            {(currentUser === customer.attendedUpdatedBy ||
+              currentUser === customer.orderConfirmedUpdatedBy) && (
+              <button
+                onClick={() => toggleDetails(index)}
+                className="text-blue-500 flex items-center space-x-2"
+              >
+                <span>
+                  {expandedDetails[index] ? "Hide Details" : "Show Details"}
+                </span>
+                <span>{expandedDetails[index] ? "▲" : "▼"}</span>
+              </button>
+            )}
+
+            {/* Conditional rendering for update details */}
+            {expandedDetails[index] && (
+              <>
+                {currentUser === customer.attendedUpdatedBy && (
+                  <>
+                    <p>
+                      <strong>Attended Updated By:</strong>{" "}
+                      {customer.attendedUpdatedBy}
+                    </p>
+                    <p>
+                      <strong>Attended Updated At:</strong>{" "}
+                      {customer.attendedUpdatedAt
+                        ? new Date(
+                            customer.attendedUpdatedAt
+                          ).toLocaleString()
+                        : "N/A"}
+                    </p>
+                  </>
+                )}
+
+                {currentUser === customer.orderConfirmedUpdatedBy && (
+                  <>
+                    <p>
+                      <strong>Order Confirmed Updated By:</strong>{" "}
+                      {customer.orderConfirmedUpdatedBy}
+                    </p>
+                    <p>
+                      <strong>Order Confirmed Updated At:</strong>{" "}
+                      {customer.orderConfirmedUpdatedAt
+                        ? new Date(
+                            customer.orderConfirmedUpdatedAt
+                          ).toLocaleString()
+                        : "N/A"}
+                    </p>
+                  </>
+                )}
+              </>
+            )}
+
             <button
+              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
               onClick={() =>
                 handleSave(
                   customer.phoneNumber,
@@ -218,7 +296,6 @@ export default function EditCustomers() {
                   customer.orderConfirmed
                 )
               }
-              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-all"
             >
               Save
             </button>
