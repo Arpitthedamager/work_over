@@ -19,7 +19,13 @@ export async function POST(req) {
       // If no list exists, create a new one with the bulk customer data
       customerList = await CustomerList.create({
         email,
-        customers, // Add the bulk customers
+        customers: customers.map(cust => ({
+          ...cust,
+          attendedUpdatedBy: null,       // Empty initially
+          attendedUpdatedAt: null,       // Empty initially
+          orderConfirmedUpdatedBy: null, // Empty initially
+          orderConfirmedUpdatedAt: null, // Empty initially
+        })),
       });
     } else {
       // Ensure that there are no duplicate phone numbers before adding customers
@@ -35,7 +41,14 @@ export async function POST(req) {
       }
 
       // Add the new customers to the list
-      customerList.customers.push(...newCustomers);
+      customerList.customers.push(...newCustomers.map(cust => ({
+        ...cust,
+        attendedUpdatedBy: null,       // Empty initially
+        attendedUpdatedAt: null,       // Empty initially
+        orderConfirmedUpdatedBy: null, // Empty initially
+        orderConfirmedUpdatedAt: null, // Empty initially
+      })));
+      
       await customerList.save();
     }
 
