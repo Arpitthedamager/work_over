@@ -3,6 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // This works only in the 'app' directory
 import EditCustomers from "../components/editcustomer/EditCustomer";
+import New from "../components/new/New";
 
 export default function UserDashboard() {
   const { data: session, status } = useSession();
@@ -35,6 +36,7 @@ export default function UserDashboard() {
       )}
 
       <EditCustomers />
+      {/* <New/> */}
     </div>
   );
 }

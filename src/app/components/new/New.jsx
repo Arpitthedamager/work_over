@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react"; // Import for session to get user role
 
-export default function EditCustomers() {
+export default function New() {
+  const { data: session } = useSession(); // Get session data to identify the user role
   const [customers, setCustomers] = useState([]);
   const [filteredCustomers, setFilteredCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -193,6 +195,9 @@ export default function EditCustomers() {
                   type="checkbox"
                   checked={customer.attended}
                   onChange={() => handleCheckboxChange(index, "attended")}
+                  disabled={
+                    customer.attended && session?.user.role !== "admin"
+                  }
                   className="w-5 h-5"
                 />
                 <span>Attended</span>
@@ -203,6 +208,9 @@ export default function EditCustomers() {
                   checked={customer.orderConfirmed}
                   onChange={() =>
                     handleCheckboxChange(index, "orderConfirmed")
+                  }
+                  disabled={
+                    customer.orderConfirmed && session?.user.role !== "admin"
                   }
                   className="w-5 h-5"
                 />
