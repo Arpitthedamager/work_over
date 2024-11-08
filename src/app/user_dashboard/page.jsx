@@ -8,15 +8,8 @@ export default function user_dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter(); // Using 'useRouter' from 'next/navigation'
 
-  const [customers, setCustomers] = useState([]);
   
-  useEffect(() => {
-    fetch('/api/customers')
-      .then((res) => res.json())
-      .then((data) => setCustomers(data))
-      .catch((err) => console.error(err));
-  }, []);
-  // Redirect if not admin (useEffect to handle side effects)
+  
   useEffect(() => {
     if (status === "loading") {
       return; // Wait until loading is finished
@@ -31,11 +24,6 @@ export default function user_dashboard() {
     return <p>Loading...</p>;
   }
 
-  const handleAttend = async (client) => {
-    // Update client status logic
-    client.attended = !client.attended;
-    // Update in MongoDB (optional, add a PATCH API if needed)
-  };
 
   return (
     <div className="p-4">
