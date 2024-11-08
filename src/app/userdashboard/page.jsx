@@ -27,7 +27,12 @@ export default function UserDashboard() {
       <div className="justify-between flex">
         <h1 className="text-2xl font-bold mb-4">Welcome to your dashboard,</h1>
         <button onClick={signOut} className="p-2 bg-red-600 rounded-lg">Sign Out</button>
-      </div>      <h1 className="text-2xl">Customers List: {session.user.name}</h1>
+      </div>
+
+      {/* Conditionally check for session before rendering user name */}
+      {session && session.user && (
+        <h1 className="text-2xl">Customers List: {session.user.name}</h1>
+      )}
 
       <EditCustomers />
     </div>

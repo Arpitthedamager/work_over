@@ -14,6 +14,9 @@ export default function CustomerTable() {
     attended: false,
   });
 
+  // New state for success message visibility
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
   // Fetch customer data when component is mounted
   useEffect(() => {
     if (status === "loading") return;
@@ -45,6 +48,39 @@ export default function CustomerTable() {
     }
   }, [status, session]);
 
+  // Delete customer function
+  const deleteCustomer = async (customerId) => {
+    try {
+      const res = await fetch(`/api/customers`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-email": session.user.name,
+        },
+        body: JSON.stringify({ customerId }), // Pass customerId to the server
+      });
+
+      if (res.ok) {
+        // Update the local customer state after deletion
+        const updatedCustomers = customers.filter((customer) => customer._id !== customerId);
+        setCustomers(updatedCustomers);
+        setFilteredCustomers(updatedCustomers);
+
+        // Show success message
+        setShowSuccessMessage(true);
+
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+          setShowSuccessMessage(false);
+        }, 3000);
+      } else {
+        setError("Failed to delete customer.");
+      }
+    } catch (error) {
+      setError("An error occurred while deleting customer.");
+    }
+  };
+
   // Filter customers based on selected filters
   const applyFilters = () => {
     let filteredData = customers;
@@ -60,11 +96,6 @@ export default function CustomerTable() {
     setFilteredCustomers(filteredData);
   };
 
-  // Toggle visibility of filter options on hover or click
-  const handleFilterToggle = () => {
-    setFilterOptionsVisible(!filterOptionsVisible);
-  };
-
   if (loading) {
     return <p>Loading...</p>;
   }
@@ -74,33 +105,33 @@ export default function CustomerTable() {
   }
 
   return (
-    <div className="overflow-x-auto shadow-md rounded-lg mt-6">
-      {/* Filter button with hover and click dropdown */}
-      <div
-        className="relative float-left mb-4"
-        onMouseEnter={() => setFilterOptionsVisible(true)} // Show on hover
-      >
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl">Full Customer Table</h2>
-          <button
-            onClick={handleFilterToggle} // Toggle on click
-            className="px-4 py-2 bg-blue-500 text-white rounded-md"
-          >
-            Filter Options
-          </button>
+    <div className="relative overflow-x-auto shadow-md rounded-lg mt-6">
+      {/* Success message with sliding animation */}
+      {showSuccessMessage && (
+        <div
+          className={`fixed top-10 left-0 bg-green-500 text-white py-2 px-4 rounded-md shadow-md transform transition-transform duration-500 ease-in-out ${
+            showSuccessMessage ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          Customer deleted successfully!
         </div>
+      )}
 
-        {/* Sliding dropdown with filter options */}
+      <h2 className="text-2xl mb-4">Customer List</h2>
+
+      <div className="flex justify-between items-center mb-4">
+        <button onClick={() => setFilterOptionsVisible(!filterOptionsVisible)} className="px-4 py-2 bg-blue-500 text-white rounded-md">
+          Filter Options
+        </button>
+
         {filterOptionsVisible && (
-          <div className="absolute top-full mt-2 left-0 w-48 bg-white border text-gray-600 border-gray-200 shadow-md rounded-md z-10">
+          <div className="absolute mt-60 left-0 w-48 bg-white border text-gray-600 border-gray-200 shadow-md rounded-md z-10">
             <div className="p-2">
               <label className="block">
                 <input
                   type="checkbox"
                   checked={filters.orderConfirmed}
-                  onChange={(e) =>
-                    setFilters({ ...filters, orderConfirmed: e.target.checked })
-                  }
+                  onChange={(e) => setFilters({ ...filters, orderConfirmed: e.target.checked })}
                   className="mr-2"
                 />
                 Order Confirmed
@@ -109,17 +140,12 @@ export default function CustomerTable() {
                 <input
                   type="checkbox"
                   checked={filters.attended}
-                  onChange={(e) =>
-                    setFilters({ ...filters, attended: e.target.checked })
-                  }
+                  onChange={(e) => setFilters({ ...filters, attended: e.target.checked })}
                   className="mr-2"
                 />
                 Attended
               </label>
-              <button
-                onClick={applyFilters}
-                className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md w-full"
-              >
+              <button onClick={applyFilters} className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md w-full">
                 Apply Filters
               </button>
             </div>
@@ -127,29 +153,34 @@ export default function CustomerTable() {
         )}
       </div>
 
-      {/* Table with scrollbar and height set to 44 */}
+      {/* Customer table */}
       <div className="h-64 mt-20 overflow-auto">
         <table className="min-w-full table-auto">
-          <thead className="">
+          <thead>
             <tr className="border-4">
               <th className="px-4 py-2 border text-left">Name</th>
               <th className="px-4 py-2 border text-left">Phone Number</th>
               <th className="px-4 py-2 border text-left">Instagram ID</th>
               <th className="px-4 py-2 border text-left">Attended</th>
               <th className="px-4 py-2 border text-left">Order Confirmed</th>
+              <th className="px-4 py-2 border text-left">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map((customer, index) => (
-              <tr key={index} className="hover:bg-orange-800">
+            {filteredCustomers.map((customer) => (
+              <tr key={customer._id} className="hover:bg-orange-800">
                 <td className="px-4 py-2 border-b">{customer.name}</td>
                 <td className="px-4 py-2 border-b">{customer.phoneNumber}</td>
                 <td className="px-4 py-2 border-b">{customer.instagramId}</td>
+                <td className="px-4 py-2 border-b">{customer.attended ? "Yes" : "No"}</td>
+                <td className="px-4 py-2 border-b">{customer.orderConfirmed ? "Yes" : "No"}</td>
                 <td className="px-4 py-2 border-b">
-                  {customer.attended ? "Yes" : "No"}
-                </td>
-                <td className="px-4 py-2 border-b">
-                  {customer.orderConfirmed ? "Yes" : "No"}
+                  <button
+                    onClick={() => deleteCustomer(customer._id)}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md"
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
