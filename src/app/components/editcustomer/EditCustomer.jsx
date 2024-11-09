@@ -19,6 +19,7 @@ export default function EditCustomers() {
   });
 
   const currentUser = session?.user?.name || "Unknown User"; // Use email instead of name for matching
+  const isAdmin = session?.user?.role === "admin"; // Check if the user is an admin
 
   // Fetch customers when component mounts
   useEffect(() => {
@@ -42,24 +43,44 @@ export default function EditCustomers() {
     fetchCustomers();
   }, []);
 
-  // Handle checkbox change
-  const handleCheckboxChange = (index, field) => {
-    const updatedCustomers = [...customers];
+ // Handle checkbox change
+// Handle checkbox change
+const handleCheckboxChange = (index, field) => {
+  const updatedCustomers = [...customers];
 
-    // Only allow the user to modify if they are the same user who last updated
-    if (
-      (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
-      (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser)
-    ) {
-      setMessage(`You can only modify the ${field} field if you were the last one to update it and ${currentUser} is working on .`);
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 3000);
-      return; // Prevent modification
-    }
+  // Check if the current user is an admin
+  const isAdmin = session?.user?.role === 'admin';
 
+  // If both 'attended' and 'orderConfirmed' are unchecked, anyone can modify
+  if (!updatedCustomers[index].attended && !updatedCustomers[index].orderConfirmed) {
     updatedCustomers[index][field] = !updatedCustomers[index][field];
     setCustomers(updatedCustomers);
-  };
+    return; // Allow modification without restrictions
+  }
+
+  // If user is admin, they can bypass the restrictions and modify any data
+  if (isAdmin) {
+    updatedCustomers[index][field] = !updatedCustomers[index][field];
+    setCustomers(updatedCustomers);
+    return; // Admin can always modify
+  }
+
+  // If one of the fields is already checked, apply ownership restrictions for non-admins
+  if (
+    (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
+    (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser)
+  ) {
+    setMessage(`You can only modify the ${field} field if you were the last one to update it.`);
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 3000);
+    return; // Prevent modification if not the last updater
+  }
+
+  // Proceed with toggling the checkbox if the user is allowed to modify
+  updatedCustomers[index][field] = !updatedCustomers[index][field];
+  setCustomers(updatedCustomers);
+};
+
 
   // Handle save
   const handleSave = async (phoneNumber, attended, orderConfirmed) => {
@@ -236,7 +257,7 @@ export default function EditCustomers() {
 
             {/* Show Details button - visible only if currentUser is the one who updated */}
             {(currentUser === customer.attendedUpdatedBy ||
-              currentUser === customer.orderConfirmedUpdatedBy) && (
+              currentUser === customer.orderConfirmedUpdatedBy || isAdmin) && (
               <button
                 onClick={() => toggleDetails(index)}
                 className="text-blue-500 flex items-center space-x-2"
@@ -251,38 +272,30 @@ export default function EditCustomers() {
             {/* Conditional rendering for update detail */}
             {expandedDetails[index] && (
               <>
-                {currentUser === customer.attendedUpdatedBy && (
-                  <>
-                    <p>
-                      <strong>Attended Updated By:</strong>{" "}
-                      {customer.attendedUpdatedBy}
-                    </p>
-                    <p>
-                      <strong>Attended Updated At:</strong>{" "}
-                      {customer.attendedUpdatedAt
-                        ? new Date(
-                            customer.attendedUpdatedAt
-                          ).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </>
+                {customer.attendedUpdatedBy && (
+                  <p>
+                    <strong>Attended Updated By:</strong>{" "}
+                    {customer.attendedUpdatedBy}
+                  </p>
+                )}
+                {customer.attendedUpdatedAt && (
+                  <p>
+                    <strong>Attended Updated At:</strong>{" "}
+                    {new Date(customer.attendedUpdatedAt).toLocaleString()}
+                  </p>
                 )}
 
-                {currentUser === customer.orderConfirmedUpdatedBy && (
-                  <>
-                    <p>
-                      <strong>Order Confirmed Updated By:</strong>{" "}
-                      {customer.orderConfirmedUpdatedBy}
-                    </p>
-                    <p>
-                      <strong>Order Confirmed Updated At:</strong>{" "}
-                      {customer.orderConfirmedUpdatedAt
-                        ? new Date(
-                            customer.orderConfirmedUpdatedAt
-                          ).toLocaleString()
-                        : "N/A"}
-                    </p>
-                  </>
+                {customer.orderConfirmedUpdatedBy && (
+                  <p>
+                    <strong>Order Confirmed Updated By:</strong>{" "}
+                    {customer.orderConfirmedUpdatedBy}
+                  </p>
+                )}
+                {customer.orderConfirmedUpdatedAt && (
+                  <p>
+                    <strong>Order Confirmed Updated At:</strong>{" "}
+                    {new Date(customer.orderConfirmedUpdatedAt).toLocaleString()}
+                  </p>
                 )}
               </>
             )}
