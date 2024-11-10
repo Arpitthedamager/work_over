@@ -102,7 +102,7 @@ export default function CustomerTable() {
   }
 
   return (
-    <div className="relative overflow-x-auto shadow-md rounded-lg mt-6">
+    <div className="relative shadow-md rounded-lg mt-6">
       {showSuccessMessage && (
         <div
           className={`fixed top-10 left-0 bg-green-500 text-white py-2 px-4 rounded-md shadow-md transform transition-transform duration-500 ease-in-out ${showSuccessMessage ? "translate-x-0" : "-translate-x-full"}`}
@@ -156,7 +156,7 @@ export default function CustomerTable() {
         )}
       </div>
 
-      <div className="h-64 mt-20 overflow-auto overflow-x-hidden">
+      <div className="h-64 mt-20 overflow-auto ">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="border-4">

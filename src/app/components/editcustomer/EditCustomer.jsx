@@ -47,40 +47,82 @@ export default function EditCustomers() {
   // Handle checkbox change
   const handleCheckboxChange = (index, field) => {
     const updatedCustomers = [...customers];
-
-    // If both 'attended', 'orderConfirmed' and 'declined' are unchecked, anyone can modify
-    if (!updatedCustomers[index].attended && !updatedCustomers[index].orderConfirmed && !updatedCustomers[index].declined) {
+  
+    // If both 'attended', 'orderConfirmed', and 'declined' are unchecked, anyone can modify
+    if (
+      !updatedCustomers[index].attended &&
+      !updatedCustomers[index].orderConfirmed &&
+      !updatedCustomers[index].declined
+    ) {
       updatedCustomers[index][field] = !updatedCustomers[index][field];
       setCustomers(updatedCustomers);
       return;
     }
-
+  
     // If user is admin, they can bypass the restrictions and modify any data
     if (isAdmin) {
       updatedCustomers[index][field] = !updatedCustomers[index][field];
+  
+      // Disable "Order Confirmed" and "Declined" if "Attended" is unchecked
+      if (field === "attended" && !updatedCustomers[index][field]) {
+        updatedCustomers[index].orderConfirmed = false;
+        updatedCustomers[index].declined = false;
+      }
+  
+      // If "Order Confirmed" is checked, uncheck "Declined" and vice versa
+      if (field === "orderConfirmed" && updatedCustomers[index][field]) {
+        updatedCustomers[index].declined = false;
+      } else if (field === "declined" && updatedCustomers[index][field]) {
+        updatedCustomers[index].orderConfirmed = false;
+      }
+  
       setCustomers(updatedCustomers);
       return;
     }
-
+  
     // Prevent modification if not the last updater
     if (
-      (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
-      (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser) ||
-      (field === "declined" && updatedCustomers[index].declinedUpdatedBy !== currentUser)
+      (field === "attended" &&
+        updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
+      (field === "orderConfirmed" &&
+        updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser) ||
+      (field === "declined" &&
+        updatedCustomers[index].declinedUpdatedBy !== currentUser)
     ) {
-      setMessage(`You can only modify the ${field} field if you were the last one to update it.`);
+      setMessage(
+        `You can only modify the ${field} field if you were the last one to update it.`
+      );
       setShowNotification(true);
       setTimeout(() => setShowNotification(false), 3000);
       return;
     }
-
+  
     // Proceed with toggling the checkbox if the user is allowed to modify
     updatedCustomers[index][field] = !updatedCustomers[index][field];
+  
+    // Disable "Order Confirmed" and "Declined" if "Attended" is unchecked
+    if (field === "attended" && !updatedCustomers[index][field]) {
+      updatedCustomers[index].orderConfirmed = false;
+      updatedCustomers[index].declined = false;
+    }
+  
+    // If "Order Confirmed" is checked, uncheck "Declined" and vice versa
+    if (field === "orderConfirmed" && updatedCustomers[index][field]) {
+      updatedCustomers[index].declined = false;
+    } else if (field === "declined" && updatedCustomers[index][field]) {
+      updatedCustomers[index].orderConfirmed = false;
+    }
+  
     setCustomers(updatedCustomers);
   };
-
+  
   // Handle save
-  const handleSave = async (phoneNumber, attended, orderConfirmed, declined) => {
+  const handleSave = async (
+    phoneNumber,
+    attended,
+    orderConfirmed,
+    declined
+  ) => {
     try {
       const res = await fetch("/api/editcustomerstatus", {
         method: "PUT",
@@ -178,15 +220,15 @@ export default function EditCustomers() {
       </div>
 
       {/* Filter section */}
-      <div className="mb-6 space-y-4">
-        <h2 className="text-xl font-bold">Filter Customers</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="mb-6">
+        <h2 className="text-xl font-bold mb-4">Filter Customers</h2>
+        <div className="flex flex-wrap gap-4">
           <input
             type="text"
             placeholder="Name"
             value={filters.name}
             onChange={(e) => setFilters({ ...filters, name: e.target.value })}
-            className="p-2 border rounded-md w-full"
+            className="p-2 border rounded-md w-full sm:w-auto flex-1"
           />
           <input
             type="text"
@@ -195,7 +237,7 @@ export default function EditCustomers() {
             onChange={(e) =>
               setFilters({ ...filters, phoneNumber: e.target.value })
             }
-            className="p-2 border rounded-md w-full"
+            className="p-2 border rounded-md w-full sm:w-auto flex-1"
           />
           <label className="flex items-center space-x-2">
             <input
@@ -245,33 +287,33 @@ export default function EditCustomers() {
             <p>Instagram ID: {customer.instagramId || "N/A"}</p>
 
             <div className="flex space-x-4">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={customer.attended}
-                  onChange={() => handleCheckboxChange(index, "attended")}
-                  className="w-5 h-5"
-                />
-                <span>Attended</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={customer.orderConfirmed}
-                  onChange={() => handleCheckboxChange(index, "orderConfirmed")}
-                  className="w-5 h-5"
-                />
-                <span>Order Confirmed</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={customer.declined}
-                  onChange={() => handleCheckboxChange(index, "declined")}
-                  className="w-5 h-5"
-                />
-                <span>Declined</span>
-              </label>
+            <label className="flex items-center space-x-2">
+  <input
+    type="checkbox"
+    checked={customer.attended}
+    onChange={() => handleCheckboxChange(index, "attended")}
+  />
+  <span>Attended</span>
+</label>
+<label className="flex items-center space-x-2">
+  <input
+    type="checkbox"
+    checked={customer.orderConfirmed}
+    onChange={() => handleCheckboxChange(index, "orderConfirmed")}
+    disabled={!customer.attended} // Disable if "Attended" is unchecked
+  />
+  <span>Order Confirmed</span>
+</label>
+<label className="flex items-center space-x-2">
+  <input
+    type="checkbox"
+    checked={customer.declined}
+    onChange={() => handleCheckboxChange(index, "declined")}
+    disabled={!customer.attended} // Disable if "Attended" is unchecked
+  />
+  <span>Declined</span>
+</label>
+
             </div>
 
             {/* Show Details button - visible only if currentUser is the one who updated */}
@@ -315,7 +357,9 @@ export default function EditCustomers() {
                 {customer.orderConfirmedUpdatedUpdatedAt && (
                   <p>
                     <strong>Order Confirmed Updated At:</strong>{" "}
-                    {new Date(customer.orderConfirmedUpdatedAt).toLocaleString()}
+                    {new Date(
+                      customer.orderConfirmedUpdatedAt
+                    ).toLocaleString()}
                   </p>
                 )}
 
@@ -326,7 +370,8 @@ export default function EditCustomers() {
                 )}
                 {customer.declinedUpdatedAt && (
                   <p>
-                    <strong>Declined At:</strong> {new Date(customer.declinedUpdatedAt).toLocaleString()}
+                    <strong>Declined At:</strong>{" "}
+                    {new Date(customer.declinedUpdatedAt).toLocaleString()}
                   </p>
                 )}
               </>
