@@ -1,14 +1,11 @@
-// src/app/api/Register/route.js
 import { connectToDatabase } from "@/app/lib/util";
 import { User } from "@/app/lib/models";
-
-
 export async function POST(req) {
-  const { email, password, role } = await req.json();
+  const { email, password, role, name, number } = await req.json();
 
   // Validate input
-  if (!email || !password) {
-    return new Response(JSON.stringify({ message: 'Email and password are required' }), { status: 400 });
+  if (!email || !password || !name || !number) {
+    return new Response(JSON.stringify({ message: 'All fields are required' }), { status: 400 });
   }
 
   try {
@@ -26,8 +23,9 @@ export async function POST(req) {
       email,
       password,
       role,
+      name,
+      number,
     });
-    console.log(newUser);
 
     // Save the user to the database
     await newUser.save();
