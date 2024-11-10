@@ -22,6 +22,9 @@ const customerSchema = new mongoose.Schema({
       orderConfirmed: { type: Boolean, default: false },
       orderConfirmedUpdatedBy: { type: String, default: null }, // Empty by default
       orderConfirmedUpdatedAt: { type: Date, default: null },   // Empty by default
+      declined: { type: Boolean, default: false },
+      declinedUpdatedBy: { type: String, default: null }, // Empty by default
+      declinedUpdatedAt: { type: Date, default: null },   // Empty by default
     }
   ]
 }, { timestamps: true });

@@ -10,7 +10,7 @@ export async function PUT(req) {
     await connectToDatabase();
 
     // Get the request body
-    const { phoneNumber, attended, orderConfirmed, updatedBy } = await req.json();
+    const { phoneNumber, attended, orderConfirmed, declined, updatedBy } = await req.json();
 
     // Get the current date and time for updating the timestamp fields
     const currentTime = new Date();
@@ -26,6 +26,9 @@ export async function PUT(req) {
           "customers.$.orderConfirmed": orderConfirmed,
           "customers.$.orderConfirmedUpdatedBy": updatedBy,
           "customers.$.orderConfirmedUpdatedAt": currentTime,
+          "customers.$.declined": declined,  // Add declined field
+          "customers.$.declinedUpdatedBy": updatedBy,  // Track who updated declined
+          "customers.$.declinedUpdatedAt": currentTime  // Add timestamp for declined field
         }
       }
     );

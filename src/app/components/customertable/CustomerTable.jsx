@@ -12,12 +12,11 @@ export default function CustomerTable() {
   const [filters, setFilters] = useState({
     orderConfirmed: false,
     attended: false,
+    declined: false, // New filter for declined status
   });
 
-  // New state for success message visibility
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-  // Fetch customer data when component is mounted
   useEffect(() => {
     if (status === "loading") return;
 
@@ -31,8 +30,8 @@ export default function CustomerTable() {
 
         if (res.ok) {
           const data = await res.json();
-          setCustomers(data); // Set all customers
-          setFilteredCustomers(data); // Set initially to all customers
+          setCustomers(data);
+          setFilteredCustomers(data);
         } else {
           setError("Failed to fetch customer data.");
         }
@@ -48,7 +47,6 @@ export default function CustomerTable() {
     }
   }, [status, session]);
 
-  // Delete customer function
   const deleteCustomer = async (customerId) => {
     try {
       const res = await fetch(`/api/customers`, {
@@ -57,19 +55,15 @@ export default function CustomerTable() {
           "Content-Type": "application/json",
           "x-admin-email": session.user.name,
         },
-        body: JSON.stringify({ customerId }), // Pass customerId to the server
+        body: JSON.stringify({ customerId }),
       });
 
       if (res.ok) {
-        // Update the local customer state after deletion
         const updatedCustomers = customers.filter((customer) => customer._id !== customerId);
         setCustomers(updatedCustomers);
         setFilteredCustomers(updatedCustomers);
 
-        // Show success message
         setShowSuccessMessage(true);
-
-        // Hide success message after 3 seconds
         setTimeout(() => {
           setShowSuccessMessage(false);
         }, 3000);
@@ -81,7 +75,6 @@ export default function CustomerTable() {
     }
   };
 
-  // Filter customers based on selected filters
   const applyFilters = () => {
     let filteredData = customers;
 
@@ -91,6 +84,10 @@ export default function CustomerTable() {
 
     if (filters.attended) {
       filteredData = filteredData.filter((customer) => customer.attended);
+    }
+
+    if (filters.declined) {
+      filteredData = filteredData.filter((customer) => customer.declined);
     }
 
     setFilteredCustomers(filteredData);
@@ -106,7 +103,6 @@ export default function CustomerTable() {
 
   return (
     <div className="relative overflow-x-auto shadow-md rounded-lg mt-6">
-      {/* Success message with sliding animation */}
       {showSuccessMessage && (
         <div
           className={`fixed top-10 left-0 bg-green-500 text-white py-2 px-4 rounded-md shadow-md transform transition-transform duration-500 ease-in-out ${showSuccessMessage ? "translate-x-0" : "-translate-x-full"}`}
@@ -143,6 +139,15 @@ export default function CustomerTable() {
                 />
                 Attended
               </label>
+              <label className="block">
+                <input
+                  type="checkbox"
+                  checked={filters.declined}
+                  onChange={(e) => setFilters({ ...filters, declined: e.target.checked })}
+                  className="mr-2"
+                />
+                Declined
+              </label>
               <button onClick={applyFilters} className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md w-full">
                 Apply Filters
               </button>
@@ -151,8 +156,7 @@ export default function CustomerTable() {
         )}
       </div>
 
-      {/* Customer table */}
-      <div className="h-64 mt-20 overflow-auto">
+      <div className="h-64 mt-20 overflow-auto overflow-x-hidden">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="border-4">
@@ -161,10 +165,13 @@ export default function CustomerTable() {
               <th className="px-4 py-2 border text-left">Instagram ID</th>
               <th className="px-4 py-2 border text-left">Attended</th>
               <th className="px-4 py-2 border text-left">Order Confirmed</th>
+              <th className="px-4 py-2 border text-left">Declined</th>
               <th className="px-4 py-2 border text-left">Attended Updated By</th>
               <th className="px-4 py-2 border text-left">Attended Updated At</th>
               <th className="px-4 py-2 border text-left">Order Confirmed Updated By</th>
               <th className="px-4 py-2 border text-left">Order Confirmed Updated At</th>
+              <th className="px-4 py-2 border text-left">Declined Updated By</th>
+              <th className="px-4 py-2 border text-left">Declined Updated At</th>
               <th className="px-4 py-2 border text-left">Actions</th>
             </tr>
           </thead>
@@ -176,10 +183,13 @@ export default function CustomerTable() {
                 <td className="px-4 py-2 border-b">{customer.instagramId}</td>
                 <td className="px-4 py-2 border-b">{customer.attended ? "Yes" : "No"}</td>
                 <td className="px-4 py-2 border-b">{customer.orderConfirmed ? "Yes" : "No"}</td>
+                <td className="px-4 py-2 border-b">{customer.declined ? "Yes" : "No"}</td>
                 <td className="px-4 py-2 border-b">{customer.attendedUpdatedBy || "N/A"}</td>
                 <td className="px-4 py-2 border-b">{customer.attendedUpdatedAt ? new Date(customer.attendedUpdatedAt).toLocaleString() : "N/A"}</td>
                 <td className="px-4 py-2 border-b">{customer.orderConfirmedUpdatedBy || "N/A"}</td>
                 <td className="px-4 py-2 border-b">{customer.orderConfirmedUpdatedAt ? new Date(customer.orderConfirmedUpdatedAt).toLocaleString() : "N/A"}</td>
+                <td className="px-4 py-2 border-b">{customer.declinedUpdatedBy || "N/A"}</td>
+                <td className="px-4 py-2 border-b">{customer.declinedUpdatedAt ? new Date(customer.declinedUpdatedAt).toLocaleString() : "N/A"}</td>
                 <td className="px-4 py-2 border-b">
                   <button
                     onClick={() => deleteCustomer(customer._id)}

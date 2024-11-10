@@ -16,6 +16,7 @@ export default function EditCustomers() {
     phoneNumber: "",
     attended: false,
     orderConfirmed: false,
+    declined: false, // Added declined filter
   });
 
   const currentUser = session?.user?.name || "Unknown User"; // Use email instead of name for matching
@@ -43,47 +44,43 @@ export default function EditCustomers() {
     fetchCustomers();
   }, []);
 
- // Handle checkbox change
-// Handle checkbox change
-const handleCheckboxChange = (index, field) => {
-  const updatedCustomers = [...customers];
+  // Handle checkbox change
+  const handleCheckboxChange = (index, field) => {
+    const updatedCustomers = [...customers];
 
-  // Check if the current user is an admin
-  const isAdmin = session?.user?.role === 'admin';
+    // If both 'attended', 'orderConfirmed' and 'declined' are unchecked, anyone can modify
+    if (!updatedCustomers[index].attended && !updatedCustomers[index].orderConfirmed && !updatedCustomers[index].declined) {
+      updatedCustomers[index][field] = !updatedCustomers[index][field];
+      setCustomers(updatedCustomers);
+      return;
+    }
 
-  // If both 'attended' and 'orderConfirmed' are unchecked, anyone can modify
-  if (!updatedCustomers[index].attended && !updatedCustomers[index].orderConfirmed) {
+    // If user is admin, they can bypass the restrictions and modify any data
+    if (isAdmin) {
+      updatedCustomers[index][field] = !updatedCustomers[index][field];
+      setCustomers(updatedCustomers);
+      return;
+    }
+
+    // Prevent modification if not the last updater
+    if (
+      (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
+      (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser) ||
+      (field === "declined" && updatedCustomers[index].declinedUpdatedBy !== currentUser)
+    ) {
+      setMessage(`You can only modify the ${field} field if you were the last one to update it.`);
+      setShowNotification(true);
+      setTimeout(() => setShowNotification(false), 3000);
+      return;
+    }
+
+    // Proceed with toggling the checkbox if the user is allowed to modify
     updatedCustomers[index][field] = !updatedCustomers[index][field];
     setCustomers(updatedCustomers);
-    return; // Allow modification without restrictions
-  }
-
-  // If user is admin, they can bypass the restrictions and modify any data
-  if (isAdmin) {
-    updatedCustomers[index][field] = !updatedCustomers[index][field];
-    setCustomers(updatedCustomers);
-    return; // Admin can always modify
-  }
-
-  // If one of the fields is already checked, apply ownership restrictions for non-admins
-  if (
-    (field === "attended" && updatedCustomers[index].attendedUpdatedBy !== currentUser) ||
-    (field === "orderConfirmed" && updatedCustomers[index].orderConfirmedUpdatedBy !== currentUser)
-  ) {
-    setMessage(`You can only modify the ${field} field if you were the last one to update it.`);
-    setShowNotification(true);
-    setTimeout(() => setShowNotification(false), 3000);
-    return; // Prevent modification if not the last updater
-  }
-
-  // Proceed with toggling the checkbox if the user is allowed to modify
-  updatedCustomers[index][field] = !updatedCustomers[index][field];
-  setCustomers(updatedCustomers);
-};
-
+  };
 
   // Handle save
-  const handleSave = async (phoneNumber, attended, orderConfirmed) => {
+  const handleSave = async (phoneNumber, attended, orderConfirmed, declined) => {
     try {
       const res = await fetch("/api/editcustomerstatus", {
         method: "PUT",
@@ -94,6 +91,7 @@ const handleCheckboxChange = (index, field) => {
           phoneNumber,
           attended,
           orderConfirmed,
+          declined,
           updatedBy: currentUser, // Use the session's email as the updatedBy value
         }),
       });
@@ -146,6 +144,10 @@ const handleCheckboxChange = (index, field) => {
 
       if (filters.orderConfirmed) {
         filtered = filtered.filter((customer) => customer.orderConfirmed);
+      }
+
+      if (filters.declined) {
+        filtered = filtered.filter((customer) => customer.declined);
       }
 
       setFilteredCustomers(filtered);
@@ -218,6 +220,16 @@ const handleCheckboxChange = (index, field) => {
             />
             <span>Order Confirmed</span>
           </label>
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={filters.declined}
+              onChange={() =>
+                setFilters({ ...filters, declined: !filters.declined })
+              }
+            />
+            <span>Declined</span>
+          </label>
         </div>
       </div>
 
@@ -246,18 +258,27 @@ const handleCheckboxChange = (index, field) => {
                 <input
                   type="checkbox"
                   checked={customer.orderConfirmed}
-                  onChange={() =>
-                    handleCheckboxChange(index, "orderConfirmed")
-                  }
+                  onChange={() => handleCheckboxChange(index, "orderConfirmed")}
                   className="w-5 h-5"
                 />
                 <span>Order Confirmed</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={customer.declined}
+                  onChange={() => handleCheckboxChange(index, "declined")}
+                  className="w-5 h-5"
+                />
+                <span>Declined</span>
               </label>
             </div>
 
             {/* Show Details button - visible only if currentUser is the one who updated */}
             {(currentUser === customer.attendedUpdatedBy ||
-              currentUser === customer.orderConfirmedUpdatedBy || isAdmin) && (
+              currentUser === customer.orderConfirmedUpdatedBy ||
+              currentUser === customer.declinedUpdatedBy ||
+              isAdmin) && (
               <button
                 onClick={() => toggleDetails(index)}
                 className="text-blue-500 flex items-center space-x-2"
@@ -291,24 +312,37 @@ const handleCheckboxChange = (index, field) => {
                     {customer.orderConfirmedUpdatedBy}
                   </p>
                 )}
-                {customer.orderConfirmedUpdatedAt && (
+                {customer.orderConfirmedUpdatedUpdatedAt && (
                   <p>
                     <strong>Order Confirmed Updated At:</strong>{" "}
                     {new Date(customer.orderConfirmedUpdatedAt).toLocaleString()}
                   </p>
                 )}
+
+                {customer.declinedUpdatedBy && (
+                  <p>
+                    <strong>Declined By:</strong> {customer.declinedUpdatedBy}
+                  </p>
+                )}
+                {customer.declinedUpdatedAt && (
+                  <p>
+                    <strong>Declined At:</strong> {new Date(customer.declinedUpdatedAt).toLocaleString()}
+                  </p>
+                )}
               </>
             )}
 
+            {/* Save Button */}
             <button
-              className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-all"
               onClick={() =>
                 handleSave(
                   customer.phoneNumber,
                   customer.attended,
-                  customer.orderConfirmed
+                  customer.orderConfirmed,
+                  customer.declined
                 )
               }
+              className="mt-4 bg-blue-500 text-white py-2 px-4 rounded"
             >
               Save
             </button>

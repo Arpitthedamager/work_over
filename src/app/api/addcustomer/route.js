@@ -34,6 +34,11 @@ export async function POST(req) {
             orderConfirmed: false,  // Default value
             orderConfirmedUpdatedBy: null, // Empty initially
             orderConfirmedUpdatedAt: null, // Empty initially
+
+            // Include the new 'declined' fields
+            declined: false,  // Default value
+            declinedUpdatedBy: null, // Empty initially
+            declinedUpdatedAt: null, // Empty initially
           },
         ],
       });
@@ -61,6 +66,9 @@ export async function POST(req) {
         orderConfirmed: false,  // Default value
         orderConfirmedUpdatedBy: null, // Empty initially
         orderConfirmedUpdatedAt: null, // Empty initially
+        declined: false,  // Default value
+        declinedUpdatedBy: null, // Empty initially
+        declinedUpdatedAt: null, // Empty initially
       });
       await customerList.save();
     }

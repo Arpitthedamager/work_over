@@ -1,5 +1,5 @@
-import { CustomerList } from '@/app/lib/models';
-import { connectToDatabase } from '@/app/lib/util';
+import { CustomerList } from "@/app/lib/models";
+import { connectToDatabase } from "@/app/lib/util";
 
 export async function POST(req) {
   await connectToDatabase();
@@ -9,7 +9,12 @@ export async function POST(req) {
     const { email, customers } = body; // email: admin's email, customers: array of customer objects
 
     if (!email || !Array.isArray(customers) || customers.length === 0) {
-      return new Response(JSON.stringify({ error: 'Invalid data. Must include email and an array of customers.' }), { status: 400 });
+      return new Response(
+        JSON.stringify({
+          error: "Invalid data. Must include email and an array of customers.",
+        }),
+        { status: 400 }
+      );
     }
 
     // Check if a customer list exists for the admin's email
@@ -19,41 +24,59 @@ export async function POST(req) {
       // If no list exists, create a new one with the bulk customer data
       customerList = await CustomerList.create({
         email,
-        customers: customers.map(cust => ({
+        customers: customers.map((cust) => ({
           ...cust,
-          attendedUpdatedBy: null,       // Empty initially
-          attendedUpdatedAt: null,       // Empty initially
+          attendedUpdatedBy: null, // Empty initially
+          attendedUpdatedAt: null, // Empty initially
           orderConfirmedUpdatedBy: null, // Empty initially
           orderConfirmedUpdatedAt: null, // Empty initially
+          declined: false, // Default value
+          declinedUpdatedBy: null, // Empty initially
+          declinedUpdatedAt: null, // Empty initially
         })),
       });
     } else {
       // Ensure that there are no duplicate phone numbers before adding customers
-      const existingPhoneNumbers = customerList.customers.map(cust => cust.phoneNumber);
+      const existingPhoneNumbers = customerList.customers.map(
+        (cust) => cust.phoneNumber
+      );
 
-      const newCustomers = customers.filter(cust => !existingPhoneNumbers.includes(cust.phoneNumber));
+      const newCustomers = customers.filter(
+        (cust) => !existingPhoneNumbers.includes(cust.phoneNumber)
+      );
 
       if (newCustomers.length === 0) {
         return new Response(
-          JSON.stringify({ error: 'All customers already exist in the list based on phone number.' }),
+          JSON.stringify({
+            error:
+              "All customers already exist in the list based on phone number.",
+          }),
           { status: 409 }
         );
       }
 
       // Add the new customers to the list
-      customerList.customers.push(...newCustomers.map(cust => ({
-        ...cust,
-        attendedUpdatedBy: null,       // Empty initially
-        attendedUpdatedAt: null,       // Empty initially
-        orderConfirmedUpdatedBy: null, // Empty initially
-        orderConfirmedUpdatedAt: null, // Empty initially
-      })));
-      
+      customerList.customers.push(
+        ...newCustomers.map((cust) => ({
+          ...cust,
+          attendedUpdatedBy: null, // Empty initially
+          attendedUpdatedAt: null, // Empty initially
+          orderConfirmedUpdatedBy: null, // Empty initially
+          orderConfirmedUpdatedAt: null, // Empty initially
+        }))
+      );
+
       await customerList.save();
     }
 
-    return new Response(JSON.stringify({ message: 'Bulk customers added successfully!' }), { status: 201 });
+    return new Response(
+      JSON.stringify({ message: "Bulk customers added successfully!" }),
+      { status: 201 }
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to add bulk customers' }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "Failed to add bulk customers" }),
+      { status: 500 }
+    );
   }
 }
