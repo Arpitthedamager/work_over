@@ -47,7 +47,7 @@ export default function EditCustomers() {
   // Handle checkbox change
   const handleCheckboxChange = (index, field) => {
     const updatedCustomers = [...customers];
-  
+
     // If both 'attended', 'orderConfirmed', and 'declined' are unchecked, anyone can modify
     if (
       !updatedCustomers[index].attended &&
@@ -58,28 +58,28 @@ export default function EditCustomers() {
       setCustomers(updatedCustomers);
       return;
     }
-  
+
     // If user is admin, they can bypass the restrictions and modify any data
     if (isAdmin) {
       updatedCustomers[index][field] = !updatedCustomers[index][field];
-  
+
       // Disable "Order Confirmed" and "Declined" if "Attended" is unchecked
       if (field === "attended" && !updatedCustomers[index][field]) {
         updatedCustomers[index].orderConfirmed = false;
         updatedCustomers[index].declined = false;
       }
-  
+
       // If "Order Confirmed" is checked, uncheck "Declined" and vice versa
       if (field === "orderConfirmed" && updatedCustomers[index][field]) {
         updatedCustomers[index].declined = false;
       } else if (field === "declined" && updatedCustomers[index][field]) {
         updatedCustomers[index].orderConfirmed = false;
       }
-  
+
       setCustomers(updatedCustomers);
       return;
     }
-  
+
     // Prevent modification if not the last updater
     if (
       (field === "attended" &&
@@ -96,26 +96,26 @@ export default function EditCustomers() {
       setTimeout(() => setShowNotification(false), 3000);
       return;
     }
-  
+
     // Proceed with toggling the checkbox if the user is allowed to modify
     updatedCustomers[index][field] = !updatedCustomers[index][field];
-  
+
     // Disable "Order Confirmed" and "Declined" if "Attended" is unchecked
     if (field === "attended" && !updatedCustomers[index][field]) {
       updatedCustomers[index].orderConfirmed = false;
       updatedCustomers[index].declined = false;
     }
-  
+
     // If "Order Confirmed" is checked, uncheck "Declined" and vice versa
     if (field === "orderConfirmed" && updatedCustomers[index][field]) {
       updatedCustomers[index].declined = false;
     } else if (field === "declined" && updatedCustomers[index][field]) {
       updatedCustomers[index].orderConfirmed = false;
     }
-  
+
     setCustomers(updatedCustomers);
   };
-  
+
   // Handle save
   const handleSave = async (
     phoneNumber,
@@ -286,36 +286,41 @@ export default function EditCustomers() {
             <p>Phone Number: {customer.phoneNumber}</p>
             <p>Instagram ID: {customer.instagramId || "N/A"}</p>
 
-            <div className="flex space-x-4">
-            <label className="flex items-center space-x-2">
-  <input
-    type="checkbox"
-    checked={customer.attended}
-    onChange={() => handleCheckboxChange(index, "attended")}
-  />
-  <span>Attended</span>
-</label>
-<label className="flex items-center space-x-2">
-  <input
-    type="checkbox"
-    checked={customer.orderConfirmed}
-    onChange={() => handleCheckboxChange(index, "orderConfirmed")}
-    disabled={!customer.attended} // Disable if "Attended" is unchecked
-  />
-  <span>Order Confirmed</span>
-</label>
-<label className="flex items-center space-x-2">
-  <input
-    type="checkbox"
-    checked={customer.declined}
-    onChange={() => handleCheckboxChange(index, "declined")}
-    disabled={!customer.attended} // Disable if "Attended" is unchecked
-  />
-  <span>Declined</span>
-</label>
-
+            <div className="flex space-x-2">
+              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={customer.attended}
+                    onChange={() => handleCheckboxChange(index, "attended")}
+                    className="w-4 h-4"
+                  />
+                  <span>Attended</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={customer.orderConfirmed}
+                    onChange={() =>
+                      handleCheckboxChange(index, "orderConfirmed")
+                    }
+                    disabled={!customer.attended} // Disable if "Attended" is unchecked
+                    className="w-4 h-4"
+                  />
+                  <span>Order Confirmed</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={customer.declined}
+                    onChange={() => handleCheckboxChange(index, "declined")}
+                    disabled={!customer.attended} // Disable if "Attended" is unchecked
+                    className="w-4 h-4"
+                  />
+                  <span>Declined</span>
+                </label>
+              </div>
             </div>
-
             {/* Show Details button - visible only if currentUser is the one who updated */}
             {(currentUser === customer.attendedUpdatedBy ||
               currentUser === customer.orderConfirmedUpdatedBy ||
